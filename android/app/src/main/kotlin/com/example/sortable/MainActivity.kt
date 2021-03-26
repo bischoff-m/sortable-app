@@ -1,0 +1,6 @@
+package com.example.sortable
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity() {
+}

@@ -1,0 +1,11 @@
+- Features
+	- Mehrere Listen
+		- Eine Hauptliste
+	- Mehrere Sortierungen
+		- Vordefinierte Sortierungen
+		- Namen für Sortierungen
+	- Pro Liste wählt man eine Sortierung aus
+	- Sync mit GDrive
+	- Bild Export (Screenshot in besser)
+	- Swipeable Lines
+	- Zusätzlich Auswahlmodus
