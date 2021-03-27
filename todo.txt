@@ -11,5 +11,6 @@
 	- Zusätzlich Auswahlmodus
 
 - Todo
+	- Set Colors
 	- Test/Set min width for HomePage
 	- Check android\app\src\main\AndroidManifest.xml
