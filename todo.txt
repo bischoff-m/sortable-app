@@ -9,3 +9,7 @@
 	- Bild Export (Screenshot in besser)
 	- Swipeable Lines
 	- Zusätzlich Auswahlmodus
+
+- Todo
+	- Test/Set min width for HomePage
+	- Check android\app\src\main\AndroidManifest.xml
