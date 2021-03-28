@@ -23,27 +23,56 @@ class SortableApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TextEditingController _textInputController = TextEditingController();
   FocusNode _textInputFocusNode = FocusNode();
 
   // style constants TODO: what is best practice to store layout constants?
-  final double marginList = 20;
-  final double maxWidthMainList = 600;
+  final double _marginList = 20;
+  final double _maxWidthMainList = 600;
   // TODO: use this to set color scheme
   // final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-  List<int> _items = List<int>.generate(20, (index) => index);
+  final int _numItems = 20;
+  late List<GlobalKey> _items =
+      List<GlobalKey>.generate(_numItems, (index) => GlobalKey());
 
   double getTopMargin(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    return max(0, min(marginList, (screenWidth - maxWidthMainList) / 2));
+    return max(0, min(_marginList, (screenWidth - _maxWidthMainList) / 2));
+  }
+
+  late List<AnimationController> _controllers =
+      List<AnimationController>.generate(_numItems, (index) {
+    return AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+  });
+
+  late List<Animation<Offset>> _animations =
+      List<Animation<Offset>>.generate(_numItems, (index) {
+    return Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0.0, 2.0),
+    ).animate(CurvedAnimation(
+      parent: _controllers[index],
+      curve: Curves.easeInOut,
+    ));
+  });
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controllers.forEach((c) {
+      c.dispose();
+    });
   }
 
   @override
@@ -56,7 +85,7 @@ class _HomePageState extends State<HomePage> {
       body: Center(
         child: ConstrainedBox(
           // main container with width constraint
-          constraints: BoxConstraints(maxWidth: maxWidthMainList),
+          constraints: BoxConstraints(maxWidth: _maxWidthMainList),
           child: Container(
             color: Colors.white,
             margin: EdgeInsets.only(top: getTopMargin(context)),
@@ -81,13 +110,20 @@ class _HomePageState extends State<HomePage> {
                         decoration: InputDecoration(
                           hintText: 'Add Item',
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.fromLTRB(0, 18, 0, 12),
+                          contentPadding: EdgeInsets.fromLTRB(0, 20, 0, 10),
                           prefixIcon: SizedBox(
                             width: 50,
                             height: 50,
                             child: IconButton(
                               // TODO: implement add function
-                              onPressed: _textInputController.clear,
+                              // onPressed: _textInputController.clear,
+                              onPressed: () {
+                                if (_controllers[4].status ==
+                                    AnimationStatus.completed)
+                                  _controllers[4].reverse();
+                                else
+                                  _controllers[4].forward();
+                              },
                               icon: Icon(Icons.add),
                             ),
                           ),
@@ -110,56 +146,48 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.black,
                 ),
                 Expanded(
-                  child: ReorderableListView(
+                  child: ListView(
                     // TODO: set font size
-                    buildDefaultDragHandles: false,
                     dragStartBehavior: DragStartBehavior.down,
-                    children: new Iterable<int>.generate(10).map((index) {
+                    children: new List<Widget>.generate(_items.length, (index) {
                       if (index == 5) {
                         return Divider(
-                          key: ValueKey<int>(_items[index]),
-                          height: 128,
-                          thickness: 128,
-                          color: Colors.black,
+                          key: _items[index],
+                          height: 96,
+                          thickness: 96,
+                          color: Colors.transparent,
                         );
                       } else {
-                        return Dismissible(
-                          background: Container(
-                            color: Colors.green,
-                          ),
-                          key: ValueKey<int>(_items[index]),
-                          onDismissed: (DismissDirection direction) {
-                            setState(() {
-                              _items.remove(index);
-                            });
-                          },
-                          child: Container(
-                            child: Row(
-                              children: <Widget>[
-                                SizedBox(
-                                  width: 64,
-                                  height: 64,
-                                  child: ReorderableDragStartListener(
-                                    index: index,
-                                    child: Icon(Icons.drag_handle, size: 30),
-                                  ),
-                                ),
-                                Text('Item ${_items[index]}'),
-                              ],
+                        return SlideTransition(
+                          position: _animations[index],
+                          child: Dismissible(
+                            child: Material(
+                              child: ListTile(
+                                hoverColor: Colors.black26,
+                                title: Text('Item $index'),
+                                onTap: () {
+                                  RenderBox rb = _items[index]
+                                      .currentContext!
+                                      .findRenderObject() as RenderBox;
+                                  Offset test = rb.localToGlobal(Offset.zero);
+                                  dev.log("$test.dx $test.dy");
+                                }, // TODO: add tap event for items
+                              ),
+                              color: Colors.white,
                             ),
+                            background: Container(
+                              color: Colors.green,
+                            ),
+                            key: _items[index],
+                            onDismissed: (DismissDirection direction) {
+                              setState(() {
+                                _items.remove(index);
+                              });
+                            },
                           ),
                         );
                       }
-                    }).toList(),
-                    onReorder: (int oldIndex, int newIndex) {
-                      setState(() {
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
-                        final int item = _items.removeAt(oldIndex);
-                        _items.insert(newIndex, item);
-                      });
-                    },
+                    }),
                   ),
                 ),
               ],
