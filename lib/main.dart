@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:developer' as dev; // TODO: remove in production
+import 'fast_reorderable_list.dart';
 
 void main() {
   runApp(SortableApp());
@@ -40,39 +41,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
   final int _numItems = 20;
-  late List<GlobalKey> _items =
-      List<GlobalKey>.generate(_numItems, (index) => GlobalKey());
 
   double getTopMargin(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return max(0, min(_marginList, (screenWidth - _maxWidthMainList) / 2));
-  }
-
-  late List<AnimationController> _controllers =
-      List<AnimationController>.generate(_numItems, (index) {
-    return AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-  });
-
-  late List<Animation<Offset>> _animations =
-      List<Animation<Offset>>.generate(_numItems, (index) {
-    return Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0.0, 2.0),
-    ).animate(CurvedAnimation(
-      parent: _controllers[index],
-      curve: Curves.easeInOut,
-    ));
-  });
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controllers.forEach((c) {
-      c.dispose();
-    });
   }
 
   @override
@@ -118,11 +90,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               // TODO: implement add function
                               // onPressed: _textInputController.clear,
                               onPressed: () {
-                                if (_controllers[4].status ==
-                                    AnimationStatus.completed)
-                                  _controllers[4].reverse();
-                                else
-                                  _controllers[4].forward();
+                                // if (_controllers[4].status ==
+                                //     AnimationStatus.completed)
+                                //   _controllers[4].reverse();
+                                // else
+                                //   _controllers[4].forward();
+                                dev.log('iiiiiih');
                               },
                               icon: Icon(Icons.add),
                             ),
@@ -146,48 +119,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: Colors.black,
                 ),
                 Expanded(
-                  child: ListView(
-                    // TODO: set font size
-                    dragStartBehavior: DragStartBehavior.down,
-                    children: new List<Widget>.generate(_items.length, (index) {
-                      if (index == 5) {
-                        return Divider(
-                          key: _items[index],
-                          height: 96,
-                          thickness: 96,
-                          color: Colors.transparent,
-                        );
-                      } else {
-                        return SlideTransition(
-                          position: _animations[index],
-                          child: Dismissible(
-                            child: Material(
-                              child: ListTile(
-                                hoverColor: Colors.black26,
-                                title: Text('Item $index'),
-                                onTap: () {
-                                  RenderBox rb = _items[index]
-                                      .currentContext!
-                                      .findRenderObject() as RenderBox;
-                                  Offset test = rb.localToGlobal(Offset.zero);
-                                  dev.log("$test.dx $test.dy");
-                                }, // TODO: add tap event for items
-                              ),
-                              color: Colors.white,
-                            ),
-                            background: Container(
-                              color: Colors.green,
-                            ),
-                            key: _items[index],
-                            onDismissed: (DismissDirection direction) {
-                              setState(() {
-                                _items.remove(index);
-                              });
-                            },
-                          ),
-                        );
-                      }
-                    }),
+                  child: FastReorderableList(
+                    children: <Widget>[
+                      for (int index = 0; index < _numItems; index++)
+                        ListTile(
+                          key: ValueKey<int>(index),
+                          title: Text('Item $index'),
+                        )
+                    ],
                   ),
                 ),
               ],

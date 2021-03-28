@@ -11,6 +11,22 @@
 	- Zusätzlich Auswahlmodus
 
 - Todo
+	- Reorder
+		- Activate via Button (or LongPress)
+		- Elevate Item
+		- Scroll with Item fixed
 	- Set Colors
 	- Test/Set min width for HomePage
 	- Check android\app\src\main\AndroidManifest.xml
+
+- Custom Reorderable List View
+	- Toggle spacer at arbitrary position
+		- Height = 2 * list item height
+	- Toggle fixed position of list item
+	- Animate reorder of spacer
+
+- Nächstes Mal
+	- Animationen zum Laufen bringen
+	- Event implementieren
+		- Start der Animation durch Event
+		- Reaktion auf Ende der Animation mit Handler
