@@ -12,72 +12,86 @@ class FastReorderableList extends StatefulWidget {
         itemBuilder = ((BuildContext context, int index) => children[index]),
         super(key: key);
 
-  final int itemCount;
+  FastReorderableList.builder({
+    Key? key,
+    required this.itemBuilder,
+    required this.itemCount,
+    // required this.onReorder,
+  }) : super(key: key);
+
+  int itemCount;
   final IndexedWidgetBuilder itemBuilder;
 
   @override
   _FastReorderableListState createState() => _FastReorderableListState();
 }
 
-class _FastReorderableListState extends State<FastReorderableList>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _controllers;
-  late List<Animation<Offset>> _animations;
-  late List<GlobalKey> _items;
+class _FastReorderableListState extends State<FastReorderableList> {
+  // this list keeps track of which separator between the items is expanded
+  late List<bool> _expanded;
+  int _curExpanded = 0;
 
   @override
   void initState() {
     super.initState();
-    _controllers =
-        List<AnimationController>.generate(widget.itemCount, (index) {
-      return AnimationController(
-        duration: const Duration(milliseconds: 200),
-        vsync: this,
-      );
-    });
-    _animations = List<Animation<Offset>>.generate(widget.itemCount, (index) {
-      return Tween<Offset>(
-        begin: Offset.zero,
-        end: const Offset(0.0, 2.0),
-      ).animate(CurvedAnimation(
-        parent: _controllers[index],
-        curve: Curves.easeInOut,
-      ));
-    });
-    _items = List<GlobalKey>.generate(widget.itemCount, (index) => GlobalKey());
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controllers.forEach((c) {
-      c.dispose();
-    });
+    _expanded = List<bool>.filled(widget.itemCount + 1, false);
+    _expanded[_curExpanded] = true;
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    final Widget item = widget.itemBuilder(context, index);
-
-    return SlideTransition(
-        position: _animations[index],
-        child: GestureDetector(
-          onTap: () {
-            print("Container clicked");
-          },
-          child: item,
-        ));
+    final int halfIndex = index ~/ 2;
+    if (index.isOdd) {
+      // place list items on all odd indices
+      final Widget item = widget.itemBuilder(context, halfIndex);
+      return GestureDetector(
+        child: item,
+        onDoubleTap: () {
+          dev.log('Animating change');
+          setState(() {
+            _expanded[_curExpanded] = false;
+            _curExpanded = (_curExpanded + 1) % _expanded.length;
+            _expanded[_curExpanded] = true;
+          });
+        },
+      );
+    } else {
+      // place spacer on all even indices
+      // dev.log('is eval');
+      return AnimatedContainer(
+        height: _expanded[halfIndex] ? 96 : 0,
+        color: _expanded[halfIndex] ? Colors.red : Colors.blue,
+        duration: const Duration(seconds: 1),
+        curve: Curves.easeInOut,
+        child: Container(),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    dev.log('Item Count: ${widget.itemCount}');
     return ListView.builder(
-      itemCount: widget.itemCount,
+      itemCount: widget.itemCount * 2 + 1,
       itemBuilder: _itemBuilder,
       dragStartBehavior: DragStartBehavior.down,
+      // TODO: add padding on top and botton, so user can insert item there
+      // padding: EdgeInsets.fromLTRB(0, 100, 0, 200),
     );
   }
+  // @override
+  // Widget build(BuildContext context) {
+  //   dev.log('Item Count: ${widget.itemCount}');
+  //   return ListView.builder(
+  //     itemCount: widget.itemCount * 2 + 1,
+  //     itemBuilder: _itemBuilder,
+  //     dragStartBehavior: DragStartBehavior.down,
+  //     // TODO: add padding on top and botton, so user can insert item there
+  //     // padding: EdgeInsets.fromLTRB(0, 100, 0, 200),
+  //   );
+  // }
 }
 
+// TODO: grab global coordinates of listtile from here
 // Dismissible(
 //         child: Material(
 //           child: ListTile(

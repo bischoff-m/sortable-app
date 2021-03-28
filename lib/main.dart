@@ -40,8 +40,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // TODO: use this to set color scheme
   // final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-  final int _numItems = 20;
+  List<String> _items = List<String>.generate(20, (index) => '$index');
 
+  // use to determine the margin of the input text field to the scaffold
   double getTopMargin(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return max(0, min(_marginList, (screenWidth - _maxWidthMainList) / 2));
@@ -90,11 +91,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               // TODO: implement add function
                               // onPressed: _textInputController.clear,
                               onPressed: () {
-                                // if (_controllers[4].status ==
-                                //     AnimationStatus.completed)
-                                //   _controllers[4].reverse();
-                                // else
-                                //   _controllers[4].forward();
                                 dev.log('iiiiiih');
                               },
                               icon: Icon(Icons.add),
@@ -121,11 +117,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Expanded(
                   child: FastReorderableList(
                     children: <Widget>[
-                      for (int index = 0; index < _numItems; index++)
-                        ListTile(
-                          key: ValueKey<int>(index),
-                          title: Text('Item $index'),
-                        )
+                      for (int index = 0; index < _items.length; index++)
+                        Dismissible(
+                          key: ValueKey<String>(_items[index]),
+                          child: Material(
+                            child: ListTile(
+                              hoverColor: Colors.black26,
+                              title: Text('Item ${_items[index]}'),
+                              onTap: () {
+                                // TODO: add tap event for items
+                                dev.log('You clicked item ${_items[index]}');
+                              },
+                            ),
+                            color: Colors.white,
+                          ),
+                          background: Container(
+                            color: Colors.green,
+                          ),
+                          onDismissed: (DismissDirection direction) {
+                            setState(() {
+                              _items.remove(index);
+                            });
+                          },
+                        ),
                     ],
                   ),
                 ),
