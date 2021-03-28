@@ -115,10 +115,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: Colors.black,
                 ),
                 Expanded(
-                  child: FastReorderableList(
-                    children: <Widget>[
-                      for (int index = 0; index < _items.length; index++)
-                        Dismissible(
+                  child: FastReorderableList.builder(
+                      itemCount: _items.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Dismissible(
                           key: ValueKey<String>(_items[index]),
                           child: Material(
                             child: ListTile(
@@ -139,9 +139,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               _items.remove(index);
                             });
                           },
-                        ),
-                    ],
-                  ),
+                        );
+                      }),
                 ),
               ],
             ),
