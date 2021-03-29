@@ -2,34 +2,60 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as dev; // TODO: remove in production
 
+/*
+NOTE: 
+Modifiying the number of items in the list while
+in reordering mode causes inconsitency.
+No bug fix is implemented because its not relevant for my use case.
+*/
+
+/*
+- override IndexedWidgetBuilder with {context, index, callback}
+- update itemBuilder and _itemBuilder
+- update at FastReorderableList.builder()
+*/
+
+typedef _ListItemBuilder = Widget Function(
+    BuildContext context, int index, Function(int index) startReorder);
+
 class FastReorderableList extends StatefulWidget {
-  FastReorderableList({
-    Key? key,
-    required List<Widget> children,
-  })   : assert(children.every((Widget w) => w.key != null),
-            'All children of this widget must have a key.'),
-        itemCount = children.length,
-        itemBuilder = ((BuildContext context, int index) => children[index]),
-        super(key: key);
+  // FastReorderableList({
+  //   Key? key,
+  //   required List<Widget> children,
+  // })   : assert(children.every((Widget w) => w.key != null),
+  //           'All children of this widget must have a key.'),
+  //       itemCount = children.length,
+  //       itemBuilder = ((BuildContext context, int index) => children[index]),
+  //       super(key: key);
 
   FastReorderableList.builder({
     Key? key,
-    required this.itemBuilder,
     required this.itemCount,
-    // required this.onReorder,
+    required this.itemBuilder,
+    // required this.onReorderDone,
   }) : super(key: key);
 
-  int itemCount;
-  final IndexedWidgetBuilder itemBuilder;
+  final int itemCount;
+  final _ListItemBuilder itemBuilder;
+  late final _FastReorderableListState state;
+
+  // void triggerAnimation() => state.triggerAnimation();
 
   @override
-  _FastReorderableListState createState() => _FastReorderableListState();
+  _FastReorderableListState createState() {
+    this.state = _FastReorderableListState();
+    return this.state;
+  }
 }
 
 class _FastReorderableListState extends State<FastReorderableList> {
   // this list keeps track of which separator between the items is expanded
   late List<bool> _expanded;
   int _curExpanded = 0;
+
+  // void triggerAnimation() {
+  //   dev.log('hat funktioniert!');
+  // }
 
   @override
   void initState() {
@@ -39,32 +65,53 @@ class _FastReorderableListState extends State<FastReorderableList> {
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    final int halfIndex = index ~/ 2;
-    if (index.isOdd) {
-      // place list items on all odd indices
-      final Widget item = widget.itemBuilder(context, halfIndex);
-      return GestureDetector(
-        child: item,
-        onDoubleTap: () {
-          dev.log('Animating change');
-          setState(() {
-            _expanded[_curExpanded] = false;
-            _curExpanded = (_curExpanded + 1) % _expanded.length;
-            _expanded[_curExpanded] = true;
-          });
-        },
-      );
-    } else {
-      // place spacer on all even indices
-      // dev.log('is eval');
-      return AnimatedContainer(
-        height: _expanded[halfIndex] ? 96 : 0,
-        color: _expanded[halfIndex] ? Colors.red : Colors.blue,
-        duration: const Duration(seconds: 1),
-        curve: Curves.easeInOut,
-        child: Container(),
-      );
-    }
+    /*
+    TODO:
+    - wrap item in inkwell with onHover handler
+    - track hover status for each item
+    - apply color if hover
+    - wrap item in animatedcontainer to get color animation
+    - outsource row with icon and item
+    - handle onPressed of button using function that gets called
+    */
+    final Widget item = widget.itemBuilder(context, index, (itemIndex) {
+      dev.log('Animating change. Item clicked: $itemIndex');
+      setState(() {
+        _expanded[_curExpanded] = false;
+        _curExpanded = (_curExpanded + 1) % _expanded.length;
+        _expanded[_curExpanded] = true;
+      });
+    });
+    return Row(
+      children: [
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton(
+            icon: Icon(Icons.drag_handle, size: 24),
+            onPressed: () {
+              dev.log('Animating change');
+              setState(() {
+                _expanded[_curExpanded] = false;
+                _curExpanded = (_curExpanded + 1) % _expanded.length;
+                _expanded[_curExpanded] = true;
+              });
+            },
+          ),
+        ),
+        Expanded(child: item)
+      ],
+    );
+  }
+
+  Widget _spacerBuilder(BuildContext context, int index) {
+    return AnimatedContainer(
+      height: _expanded[index] ? 96 : 0,
+      color: _expanded[index] ? Colors.red : Colors.blue,
+      duration: const Duration(seconds: 1),
+      curve: Curves.easeInOut,
+      child: Container(),
+    );
   }
 
   @override
@@ -72,23 +119,17 @@ class _FastReorderableListState extends State<FastReorderableList> {
     dev.log('Item Count: ${widget.itemCount}');
     return ListView.builder(
       itemCount: widget.itemCount * 2 + 1,
-      itemBuilder: _itemBuilder,
+      itemBuilder: (BuildContext context, int index) {
+        if (index.isOdd)
+          return _itemBuilder(context, index ~/ 2);
+        else
+          return _spacerBuilder(context, index ~/ 2);
+      },
       dragStartBehavior: DragStartBehavior.down,
       // TODO: add padding on top and botton, so user can insert item there
       // padding: EdgeInsets.fromLTRB(0, 100, 0, 200),
     );
   }
-  // @override
-  // Widget build(BuildContext context) {
-  //   dev.log('Item Count: ${widget.itemCount}');
-  //   return ListView.builder(
-  //     itemCount: widget.itemCount * 2 + 1,
-  //     itemBuilder: _itemBuilder,
-  //     dragStartBehavior: DragStartBehavior.down,
-  //     // TODO: add padding on top and botton, so user can insert item there
-  //     // padding: EdgeInsets.fromLTRB(0, 100, 0, 200),
-  //   );
-  // }
 }
 
 // TODO: grab global coordinates of listtile from here

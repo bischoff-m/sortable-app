@@ -40,7 +40,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // TODO: use this to set color scheme
   // final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
-  List<String> _items = List<String>.generate(20, (index) => '$index');
+  List<String> _items = List<String>.generate(20, (index) => 'Item $index');
+  Key listKey = GlobalKey();
 
   // use to determine the margin of the input text field to the scaffold
   double getTopMargin(BuildContext context) {
@@ -83,10 +84,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         decoration: InputDecoration(
                           hintText: 'Add Item',
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.fromLTRB(0, 20, 0, 10),
+                          contentPadding: EdgeInsets.fromLTRB(0, 19, 0, 9),
                           prefixIcon: SizedBox(
-                            width: 50,
-                            height: 50,
+                            width: 48,
+                            height: 48,
                             child: IconButton(
                               // TODO: implement add function
                               // onPressed: _textInputController.clear,
@@ -97,8 +98,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ),
                           ),
                           suffixIcon: SizedBox(
-                            width: 50,
-                            height: 50,
+                            width: 48,
+                            height: 48,
                             child: IconButton(
                               onPressed: _textInputController.clear,
                               icon: Icon(Icons.clear),
@@ -115,32 +116,68 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: Colors.black,
                 ),
                 Expanded(
+                  // child: ReorderableListView.builder(
+                  //   itemCount: _items.length,
+                  //   itemBuilder: (BuildContext context, int index) {
+                  //     return Dismissible(
+                  //       key: ValueKey<String>(_items[index]),
+                  //       child: Material(
+                  //         child: ListTile(
+                  //           hoverColor: Colors.black26,
+                  //           title: Text(_items[index]),
+                  //           onTap: () {
+                  //             // TODO: add tap event for items
+                  //             dev.log('You clicked item ${_items[index]}');
+                  //           },
+                  //         ),
+                  //         color: Colors.white,
+                  //       ),
+                  //       background: Container(
+                  //         color: Colors.green,
+                  //       ),
+                  //       onDismissed: (DismissDirection direction) {
+                  //         setState(() {
+                  //           _items.removeAt(index);
+                  //         });
+                  //       },
+                  //     );
+                  //   },
+                  //   onReorder: (int oldIndex, int newIndex) {
+                  //     setState(() {
+                  //       if (oldIndex < newIndex) {
+                  //         newIndex -= 1;
+                  //       }
+                  //       final String item = _items.removeAt(oldIndex);
+                  //       _items.insert(newIndex, item);
+                  //     });
+                  //   },
+                  // ),
                   child: FastReorderableList.builder(
-                      itemCount: _items.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Dismissible(
-                          key: ValueKey<String>(_items[index]),
-                          child: Material(
-                            child: ListTile(
-                              hoverColor: Colors.black26,
-                              title: Text('Item ${_items[index]}'),
-                              onTap: () {
-                                // TODO: add tap event for items
-                                dev.log('You clicked item ${_items[index]}');
-                              },
-                            ),
-                            color: Colors.white,
-                          ),
-                          background: Container(
-                            color: Colors.green,
-                          ),
-                          onDismissed: (DismissDirection direction) {
-                            setState(() {
-                              _items.remove(index);
-                            });
-                          },
-                        );
-                      }),
+                    itemCount: _items.length,
+                    itemBuilder: (BuildContext context, int index,
+                        Function(int index) startReorder) {
+                      return Dismissible(
+                        key: ValueKey<String>(_items[index]),
+                        child: ListTile(
+                          title: Text(_items[index]),
+                          // onTap: () {
+                          //   // TODO: add tap event for items
+                          //   dev.log('You clicked item ${_items[index]}');
+                          //   FastReorderableList.o
+                          // },
+                          onTap: () => startReorder(index),
+                        ),
+                        background: Container(
+                          color: Colors.green,
+                        ),
+                        onDismissed: (DismissDirection direction) {
+                          setState(() {
+                            _items.removeAt(index);
+                          });
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
