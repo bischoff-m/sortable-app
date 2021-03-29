@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:developer' as dev; // TODO: remove in production
 import 'fast_reorderable_list.dart';
+import 'dismissible_list_tile.dart';
 
 void main() {
   runApp(SortableApp());
@@ -84,10 +85,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         decoration: InputDecoration(
                           hintText: 'Add Item',
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.fromLTRB(0, 19, 0, 9),
+                          contentPadding: EdgeInsets.fromLTRB(0, 16, 0, 9),
                           prefixIcon: SizedBox(
                             width: 48,
-                            height: 48,
+                            height: 48, // TODO: make higher like shoppinlist
                             child: IconButton(
                               // TODO: implement add function
                               // onPressed: _textInputController.clear,
@@ -116,60 +117,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: Colors.black,
                 ),
                 Expanded(
-                  // child: ReorderableListView.builder(
-                  //   itemCount: _items.length,
-                  //   itemBuilder: (BuildContext context, int index) {
-                  //     return Dismissible(
-                  //       key: ValueKey<String>(_items[index]),
-                  //       child: Material(
-                  //         child: ListTile(
-                  //           hoverColor: Colors.black26,
-                  //           title: Text(_items[index]),
-                  //           onTap: () {
-                  //             // TODO: add tap event for items
-                  //             dev.log('You clicked item ${_items[index]}');
-                  //           },
-                  //         ),
-                  //         color: Colors.white,
-                  //       ),
-                  //       background: Container(
-                  //         color: Colors.green,
-                  //       ),
-                  //       onDismissed: (DismissDirection direction) {
-                  //         setState(() {
-                  //           _items.removeAt(index);
-                  //         });
-                  //       },
-                  //     );
-                  //   },
-                  //   onReorder: (int oldIndex, int newIndex) {
-                  //     setState(() {
-                  //       if (oldIndex < newIndex) {
-                  //         newIndex -= 1;
-                  //       }
-                  //       final String item = _items.removeAt(oldIndex);
-                  //       _items.insert(newIndex, item);
-                  //     });
-                  //   },
-                  // ),
                   child: FastReorderableList.builder(
                     itemCount: _items.length,
                     itemBuilder: (BuildContext context, int index,
                         Function(int index) startReorder) {
-                      return Dismissible(
+                      return DismissibleListTile(
                         key: ValueKey<String>(_items[index]),
-                        child: ListTile(
-                          title: Text(_items[index]),
-                          // onTap: () {
-                          //   // TODO: add tap event for items
-                          //   dev.log('You clicked item ${_items[index]}');
-                          //   FastReorderableList.o
-                          // },
-                          onTap: () => startReorder(index),
-                        ),
-                        background: Container(
-                          color: Colors.green,
-                        ),
+                        title: Text(_items[index]),
+                        onTap: () {},
+                        onIconTap: () => startReorder(index),
+                        hoverColor: Colors.black26,
                         onDismissed: (DismissDirection direction) {
                           setState(() {
                             _items.removeAt(index);
@@ -177,6 +134,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         },
                       );
                     },
+                    // onReorder: (int oldIndex, int newIndex) {
+                    //   setState(() {
+                    //     if (oldIndex < newIndex) {
+                    //       newIndex -= 1;
+                    //     }
+                    //     final String item = _items.removeAt(oldIndex);
+                    //     _items.insert(newIndex, item);
+                    //   });
+                    // },
                   ),
                 ),
               ],

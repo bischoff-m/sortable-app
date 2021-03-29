@@ -26,6 +26,16 @@
 	- Animate reorder of spacer
 
 - Nächstes Mal
+	- Hover-Effect bei ListTile zum Laufen bringen
+		1. Möglichkeit: eigene Animation
+			- widget, das onHover oder onPan oder ähnliches bereit stellt
+			- zuweisung der farbe im animatedcontainer
+			- animatedcontainer kann auch nach innen verschoben werden, falls farbe sonst überdeckt wird
+			- Zur Not ListTile mit eigenem Widget ersetzen
+		2. Möglichkeit: bereits bestehende Widgets verwenden
+			- Ink/InkWell
+			- ListTile
+			- googlen was es noch so gibt
 	- Animationen zum Laufen bringen
 	- Event implementieren
 		- Start der Animation durch Event

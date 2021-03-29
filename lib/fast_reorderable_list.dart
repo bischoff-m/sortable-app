@@ -19,15 +19,6 @@ typedef _ListItemBuilder = Widget Function(
     BuildContext context, int index, Function(int index) startReorder);
 
 class FastReorderableList extends StatefulWidget {
-  // FastReorderableList({
-  //   Key? key,
-  //   required List<Widget> children,
-  // })   : assert(children.every((Widget w) => w.key != null),
-  //           'All children of this widget must have a key.'),
-  //       itemCount = children.length,
-  //       itemBuilder = ((BuildContext context, int index) => children[index]),
-  //       super(key: key);
-
   FastReorderableList.builder({
     Key? key,
     required this.itemCount,
@@ -37,25 +28,15 @@ class FastReorderableList extends StatefulWidget {
 
   final int itemCount;
   final _ListItemBuilder itemBuilder;
-  late final _FastReorderableListState state;
-
-  // void triggerAnimation() => state.triggerAnimation();
 
   @override
-  _FastReorderableListState createState() {
-    this.state = _FastReorderableListState();
-    return this.state;
-  }
+  _FastReorderableListState createState() => _FastReorderableListState();
 }
 
 class _FastReorderableListState extends State<FastReorderableList> {
   // this list keeps track of which separator between the items is expanded
   late List<bool> _expanded;
   int _curExpanded = 0;
-
-  // void triggerAnimation() {
-  //   dev.log('hat funktioniert!');
-  // }
 
   @override
   void initState() {
@@ -82,26 +63,27 @@ class _FastReorderableListState extends State<FastReorderableList> {
         _expanded[_curExpanded] = true;
       });
     });
-    return Row(
-      children: [
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: IconButton(
-            icon: Icon(Icons.drag_handle, size: 24),
-            onPressed: () {
-              dev.log('Animating change');
-              setState(() {
-                _expanded[_curExpanded] = false;
-                _curExpanded = (_curExpanded + 1) % _expanded.length;
-                _expanded[_curExpanded] = true;
-              });
-            },
-          ),
-        ),
-        Expanded(child: item)
-      ],
-    );
+    return item;
+    // return Row(
+    //   children: [
+    //     SizedBox(
+    //       width: 48,
+    //       height: 48,
+    //       child: IconButton(
+    //         icon: Icon(Icons.drag_handle, size: 24),
+    //         onPressed: () {
+    //           dev.log('Animating change');
+    //           setState(() {
+    //             _expanded[_curExpanded] = false;
+    //             _curExpanded = (_curExpanded + 1) % _expanded.length;
+    //             _expanded[_curExpanded] = true;
+    //           });
+    //         },
+    //       ),
+    //     ),
+    //     Expanded(child: item)
+    //   ],
+    // );
   }
 
   Widget _spacerBuilder(BuildContext context, int index) {
@@ -116,7 +98,6 @@ class _FastReorderableListState extends State<FastReorderableList> {
 
   @override
   Widget build(BuildContext context) {
-    dev.log('Item Count: ${widget.itemCount}');
     return ListView.builder(
       itemCount: widget.itemCount * 2 + 1,
       itemBuilder: (BuildContext context, int index) {
